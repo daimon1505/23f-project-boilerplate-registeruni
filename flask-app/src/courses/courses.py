@@ -16,7 +16,6 @@ def get_courses():
     for row in theData:
         json_data.append(dict(zip(row_headers, row)))
     the_response = make_response(jsonify(json_data))  
-    the_response.status_code = 200
     the_response.mimetype = 'application/json'
     return the_response
 
@@ -43,7 +42,7 @@ def add_new_course():
     cursor.execute(query)
     db.get_db().commit()
     
-    return jsonify({"message": "Course added successfully"}), 201
+    return jsonify({"message": "Course added successfully"})
 
 #get details of a specific course
 @Course.route('/courses/<int:course_id>', methods=['GET'])
@@ -67,7 +66,7 @@ def bulk_update_courses():
     updates = request.get_json()
 
     if not isinstance(updates, list):
-        return jsonify({"error": "Request data should be a list of updates"}), 400
+        return jsonify({"error": "Request data should be a list of updates"})
 
     cursor = db.get_db().cursor()
 
@@ -81,12 +80,11 @@ def bulk_update_courses():
             current_app.logger.info(query)
             cursor.execute(query, list(fields.values()) + [course_id])
 
-    # Commit all updates
     db.get_db().commit()
-    return jsonify({"message": "Courses updated successfully"}), 200
+    return jsonify({"message": "Courses updated successfully"})
 
 
-#Update a specific courseID
+#Update a specific course
 @Course.route('/courses/<int:course_id>', methods=['PUT'])
 def update_course(course_id):
     the_data = request.json
@@ -129,4 +127,81 @@ def remove_course(course_id):
     cursor.execute(query, (course_id,))
     db.get_db().commit()
     
-    return jsonify({"message": "Course deleted successfully"}), 200
+    return jsonify({"message": "Course deleted successfully"})
+
+#return all academic policies
+@Course.route('/academic_policies', methods=['GET'])
+def list_academic_policies():
+    cursor = db.get_db().cursor()
+    cursor.execute('SELECT PolicyID, CourseID, Title, Description, EffectiveDate FROM Academic_Policies')
+    policies = cursor.fetchall()
+    cursor.close()
+
+    if not policies:
+        return jsonify([])
+
+    column_headers = [x[0] for x in cursor.description]
+    policies_list = [dict(zip(column_headers, policy)) for policy in policies]
+
+    return jsonify(policies_list)
+
+#return academic policy given specific courseID
+@Course.route('/courses/<int:course_id>/academic_policies', methods=['GET'])
+def get_academic_policies_for_course(course_id):
+    cursor = db.get_db().cursor()
+    query = 'SELECT PolicyID, CourseID, Title, Description, EffectiveDate FROM Academic_Policies WHERE CourseID = %s'
+    cursor.execute(query, (course_id,))
+    policies = cursor.fetchall()
+    cursor.close()
+
+    if not policies:
+        return jsonify({"message": "No academic policies found for the given course ID"}), 404
+
+    column_headers = [x[0] for x in cursor.description]
+    policies_list = [dict(zip(column_headers, policy)) for policy in policies]
+
+    return jsonify(policies_list)
+
+#Add new acadmic policy
+@Course.route('/academic_policies', methods=['POST'])
+def add_academic_policy():
+    policy_data = request.json
+    course_id = policy_data['CourseID']
+    title = policy_data['Title']
+    description = policy_data['Description']
+    effective_date = policy_data['EffectiveDate']
+    
+    query = '''
+    INSERT INTO Academic_Policies (CourseID, Title, Description, EffectiveDate)
+    VALUES (%s, %s, %s, %s)
+    '''
+    cursor = db.get_db().cursor()
+    cursor.execute(query, (course_id, title, description, effective_date))
+    db.get_db().commit()
+    
+    return jsonify({"message": "Academic policy added successfully"})
+
+@Course.route('/academic_policies/<int:policy_id>', methods=['PUT'])
+def update_academic_policy(policy_id):
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    course_id = the_data['CourseID']
+    title = the_data['Title']
+    description = the_data['Description']
+    effective_date = the_data['EffectiveDate']
+
+    query = "UPDATE Academic_Policies SET "
+    query += "CourseID = '" + str(course_id) + "', "
+    query += "Title = '" + title + "', "
+    query += "Description = '" + description + "', "
+    query += "EffectiveDate = '" + effective_date + "' "
+    query += "WHERE PolicyID = " + str(policy_id)
+
+    current_app.logger.info(query)
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    db.get_db().commit()
+
+    return jsonify({"message": "Academic policy updated successfully"})
