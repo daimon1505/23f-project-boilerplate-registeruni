@@ -86,13 +86,12 @@ def bulk_update_courses():
     return jsonify({"message": "Courses updated successfully"}), 200
 
 
-#Update a specific course
+#Update a specific courseID
 @Course.route('/courses/<int:course_id>', methods=['PUT'])
 def update_course(course_id):
     the_data = request.json
     current_app.logger.info(the_data)
 
-    # Extracting the course details from the data
     name = the_data['name']
     credit_hours = the_data['credit_hours']
     description = the_data['description']
@@ -100,7 +99,6 @@ def update_course(course_id):
     teacher_id = the_data['teacher_id']
     department_key = the_data['department_key']
 
-    # Constructing the SQL update query
     query = "UPDATE Course SET "
     query += "name = '" + name + "', "
     query += "credit_hours = " + str(credit_hours) + ", "
