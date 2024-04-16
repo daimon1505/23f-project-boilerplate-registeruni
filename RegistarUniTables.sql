@@ -9,7 +9,7 @@ CREATE TABLE if not exists Department (
     Chair VARCHAR(255)
 );
 
-CREATE TABLE if not exists Registar (
+CREATE TABLE if not exists Registrar (
    RegistarID INT PRIMARY KEY,
    PhoneNum TEXT,
    Email VARCHAR(255),
