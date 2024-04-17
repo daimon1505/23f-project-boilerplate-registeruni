@@ -27,6 +27,7 @@ def add_new_course():
     the_data = request.json
     current_app.logger.info(the_data)
 
+    courseId = the_data['CourseID']
     name = the_data['Name']
     credit_hours = the_data['Credit_Hours']
     description = the_data.get('Description', '')  
@@ -34,8 +35,8 @@ def add_new_course():
     teacher_id = the_data['Teacher_ID']
     department_key = the_data['DepartmentKey']
 
-    query = 'INSERT INTO Course (Name, Credit_Hours, Description, Pre_req, Teacher_ID, DepartmentKey) VALUES ('
-    query += f'"{name}", {credit_hours}, "{description}", {pre_req if pre_req is not None else "NULL"}, {teacher_id}, {department_key})'
+    query = 'INSERT INTO Course (CourseID, Name, Credit_Hours, Description, Pre_req, Teacher_ID, DepartmentKey) VALUES ('
+    query += f'{courseId}, "{name}", {credit_hours}, "{description}", {pre_req if pre_req is not None else "NULL"}, {teacher_id}, {department_key})'
     current_app.logger.info(query)
 
     cursor = db.get_db().cursor()
