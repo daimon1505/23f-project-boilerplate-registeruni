@@ -3,14 +3,17 @@ from src import db
 
 student_bp = Blueprint('student', __name__)
 
-
 @student_bp.route('/students/<int:student_id>/plans', methods=['GET'])
 def get_student_plans(student_id):
     cursor = db.get_db().cursor()
     cursor.execute('SELECT * FROM Plan WHERE studentID = %s', (student_id,))
+    row_headers = [x[0] for x in cursor.description]  # Extract the row headers
+    json_data = []
     plans = cursor.fetchall()
+    for plan in plans:
+        json_data.append(dict(zip(row_headers, plan)))
     cursor.close()
-    return jsonify(plans), 200
+    return jsonify(json_data), 200
 
 @student_bp.route('/students/<int:student_id>/plans', methods=['POST'])
 def create_student_plan(student_id):
@@ -42,10 +45,13 @@ def delete_student_plan(student_id, plan_id):
 def get_student_academic_record(student_id):
     cursor = db.get_db().cursor()
     cursor.execute('SELECT * FROM StudentAcademicRecord WHERE studentID = %s', (student_id,))
+    row_headers = [x[0] for x in cursor.description]  # Extract the row headers
+    json_data = []
     record = cursor.fetchall()
+    for rec in record:
+        json_data.append(dict(zip(row_headers, rec)))
     cursor.close()
-    return jsonify(record), 200
-
+    return jsonify(json_data), 200
 
 @student_bp.route('/students/<int:student_id>', methods=['PUT'])
 def update_student_academic_record(student_id):
@@ -57,14 +63,17 @@ def update_student_academic_record(student_id):
     cursor.close()
     return jsonify({"message": "Academic record updated"}), 200
 
-
 @student_bp.route('/students/<int:student_id>/feedback', methods=['GET'])
 def get_student_feedback(student_id):
     cursor = db.get_db().cursor()
     cursor.execute('SELECT * FROM Feedback WHERE studentID = %s', (student_id,))
-    feedback = cursor.fetchall()
+    row_headers = [x[0] for x in cursor.description]  # Extract the row headers
+    json_data = []
+    feedbacks = cursor.fetchall()
+    for feedback in feedbacks:
+        json_data.append(dict(zip(row_headers, feedback)))
     cursor.close()
-    return jsonify(feedback), 200
+    return jsonify(json_data), 200
 
 @student_bp.route('/students/<int:student_id>/courses/<int:course_id>/feedback', methods=['POST'])
 def submit_feedback(student_id, course_id):
