@@ -3,6 +3,7 @@ from src import db
 
 advisor_bp = Blueprint('advisor', __name__)
 
+# List all advisors
 @advisor_bp.route('/advisors', methods=['GET'])
 def get_advisors():
     cursor = db.get_db().cursor()
@@ -15,6 +16,7 @@ def get_advisors():
     cursor.close()
     return jsonify(json_data), 200
 
+# Add advisor
 @advisor_bp.route('/advisors', methods=['POST'])
 def add_advisor():
     data = request.json
@@ -25,6 +27,7 @@ def add_advisor():
     cursor.close()
     return jsonify({"message": "Advisor added successfully"}), 201
 
+# Get specific advisor
 @advisor_bp.route('/advisors/<int:advisor_id>', methods=['GET'])
 def get_advisor(advisor_id):
     cursor = db.get_db().cursor()
@@ -37,6 +40,7 @@ def get_advisor(advisor_id):
     cursor.close()
     return jsonify(json_data), 200 if advisor else ('', 404)
 
+# Update advisor information
 @advisor_bp.route('/advisors/<int:advisor_id>', methods=['PUT'])
 def update_advisor(advisor_id):
     data = request.json
@@ -47,6 +51,7 @@ def update_advisor(advisor_id):
     cursor.close()
     return jsonify({"message": "Advisor details updated successfully"}), 200
 
+# Create new degree audit
 @advisor_bp.route('/advisors/<int:advisor_id>/degreeaudit', methods=['POST'])
 def create_degree_audit(advisor_id):
     data = request.json
@@ -57,6 +62,7 @@ def create_degree_audit(advisor_id):
     cursor.close()
     return jsonify({"message": "Degree audit created successfully"}), 201
 
+# Update degree audit
 @advisor_bp.route('/advisors/<int:advisor_id>/degreeaudit/<int:audit_id>', methods=['PUT'])
 def update_degree_audit(advisor_id, audit_id):
     data = request.json
@@ -67,6 +73,7 @@ def update_degree_audit(advisor_id, audit_id):
     cursor.close()
     return jsonify({"message": "Degree audit updated successfully"}), 200
 
+# Delete advisor
 @advisor_bp.route('/advisors/<int:advisor_id>', methods=['DELETE'])
 def delete_advisor(advisor_id):
     cursor = db.get_db().cursor()
