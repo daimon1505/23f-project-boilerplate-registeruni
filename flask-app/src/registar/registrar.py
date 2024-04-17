@@ -43,7 +43,7 @@ def update_registrar(registrar_id):
     cursor.close()
     return jsonify({'message': 'Registrar updated successfully'}), 200
 
-# List a specific registrar
+# List specific registrar
 @registrar_bp.route('/registrar/<int:registrar_id>', methods=['GET'])
 def get_registrar(registrar_id):
     cursor = db.get_db().cursor()
