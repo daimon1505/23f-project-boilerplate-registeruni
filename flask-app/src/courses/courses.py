@@ -205,3 +205,69 @@ def update_academic_policy(policy_id):
     db.get_db().commit()
 
     return jsonify({"message": "Academic policy updated successfully"})
+
+# Get enrollment status for a specific course
+@Course.route('/courses/<int:course_id>/enrollment_status', methods=['GET'])
+def get_enrollment_status(course_id):
+    query = '''
+    SELECT Total_Enrollment, Maximum_Capacity, Waitlist_Total 
+    FROM Enrollment_Status 
+    WHERE CourseID = {}
+    '''.format(course_id)
+    current_app.logger.info(query)
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    column_headers = [x[0] for x in cursor.description] 
+    json_data = []
+    the_data = cursor.fetchall()
+    if the_data:
+        for row in the_data:
+            json_data.append(dict(zip(column_headers, row)))
+        return jsonify(json_data)
+    else:
+        return jsonify({"message": "No enrollment status found for this course"})
+
+# Add enrollment status to a specific course
+@Course.route('/courses/<int:course_id>/enrollment_status', methods=['POST'])
+def add_enrollment_status(course_id):
+    the_data = request.json
+    total_enrollment = the_data['total_enrollment']
+    maximum_capacity = the_data['maximum_capacity']
+    waitlist_total = the_data['waitlist_total']
+
+    query = '''
+    INSERT INTO Enrollment_Status (Total_Enrollment, Maximum_Capacity, Waitlist_Total, CourseID) 
+    VALUES (%s, %s, %s, %s)
+    '''
+    current_app.logger.info(query)
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query, (total_enrollment, maximum_capacity, waitlist_total, course_id))
+    db.get_db().commit()
+
+    return 'success'
+
+# Update enrollment status for a specific course
+@Course.route('/courses/<int:course_id>/enrollment_status', methods=['PUT'])
+def update_enrollment_status(course_id):
+    the_data = request.json
+    total_enrollment = the_data['total_enrollment']
+    maximum_capacity = the_data['maximum_capacity']
+    waitlist_total = the_data['waitlist_total']
+
+    if total_enrollment > maximum_capacity:
+        return jsonify({"error": "Total enrollment cannot exceed maximum capacity"}), 400
+
+    query = '''
+    UPDATE Enrollment_Status
+    SET Total_Enrollment = %s, Maximum_Capacity = %s, Waitlist_Total = %s
+    WHERE CourseID = %s
+    '''
+    current_app.logger.info(query)
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query, (total_enrollment, maximum_capacity, waitlist_total, course_id))
+    db.get_db().commit()
+
+    return 'success'
