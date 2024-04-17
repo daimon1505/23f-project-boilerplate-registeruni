@@ -90,20 +90,20 @@ def update_course(course_id):
     the_data = request.json
     current_app.logger.info(the_data)
 
-    name = the_data['name']
-    credit_hours = the_data['credit_hours']
-    description = the_data['description']
-    pre_req = the_data.get('pre_req', None)  
-    teacher_id = the_data['teacher_id']
-    department_key = the_data['department_key']
+    name = the_data['Name']
+    credit_hours = the_data['Credit_Hours']
+    description = the_data['Description']
+    pre_req = the_data.get('Pre_req', None)  
+    teacher_id = the_data['Teacher_ID']
+    department_key = the_data['DepartmentKey']
 
     query = "UPDATE Course SET "
-    query += "name = '" + name + "', "
-    query += "credit_hours = " + str(credit_hours) + ", "
-    query += "description = '" + description + "', "
-    query += "pre_req = " + (str(pre_req) if pre_req is not None else 'NULL') + ", "
-    query += "teacher_id = " + str(teacher_id) + ", "
-    query += "department_key = " + str(department_key) + " "
+    query += "Name = '" + name + "', "
+    query += "Credit_Hours = " + str(credit_hours) + ", "
+    query += "Description = '" + description + "', "
+    query += "Pre_req = " + (str(pre_req) if pre_req is not None else 'NULL') + ", "
+    query += "Teacher_ID = " + str(teacher_id) + ", "
+    query += "DepartmentKey = " + str(department_key) + " "
     query += "WHERE CourseID = " + str(course_id)
 
     current_app.logger.info(query)
@@ -113,6 +113,7 @@ def update_course(course_id):
     db.get_db().commit()
 
     return 'Success'
+
 
 
 
