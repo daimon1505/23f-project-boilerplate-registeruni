@@ -3,6 +3,7 @@ from src import db
 
 student_bp = Blueprint('student', __name__)
 
+# Get student plan for specific student
 @student_bp.route('/students/<int:student_id>/plans', methods=['GET'])
 def get_student_plans(student_id):
     cursor = db.get_db().cursor()
@@ -15,6 +16,7 @@ def get_student_plans(student_id):
     cursor.close()
     return jsonify(json_data), 200
 
+# Add a student plan to plans
 @student_bp.route('/students/<int:student_id>/plans', methods=['POST'])
 def create_student_plan(student_id):
     data = request.json
@@ -24,6 +26,7 @@ def create_student_plan(student_id):
     cursor.close()
     return jsonify({"message": "Plan created"}), 201
 
+# Update a student plan in plans
 @student_bp.route('/students/<int:student_id>/plans/<int:plan_id>', methods=['PUT'])
 def update_student_plan(student_id, plan_id):
     data = request.json
@@ -33,6 +36,7 @@ def update_student_plan(student_id, plan_id):
     cursor.close()
     return jsonify({"message": "Plan updated"}), 200
 
+# Delete a student plan
 @student_bp.route('/students/<int:student_id>/plans/<int:plan_id>', methods=['DELETE'])
 def delete_student_plan(student_id, plan_id):
     cursor = db.get_db().cursor()
@@ -41,6 +45,7 @@ def delete_student_plan(student_id, plan_id):
     cursor.close()
     return jsonify({"message": "Plan deleted"}), 200
 
+# Get a student's academic record
 @student_bp.route('/students/<int:student_id>', methods=['GET'])
 def get_student_academic_record(student_id):
     cursor = db.get_db().cursor()
@@ -53,6 +58,7 @@ def get_student_academic_record(student_id):
     cursor.close()
     return jsonify(json_data), 200
 
+# Update a student's record
 @student_bp.route('/students/<int:student_id>', methods=['PUT'])
 def update_student_academic_record(student_id):
     data = request.json
@@ -63,6 +69,7 @@ def update_student_academic_record(student_id):
     cursor.close()
     return jsonify({"message": "Academic record updated"}), 200
 
+# List a student's feedback
 @student_bp.route('/students/<int:student_id>/feedback', methods=['GET'])
 def get_student_feedback(student_id):
     cursor = db.get_db().cursor()
@@ -75,6 +82,7 @@ def get_student_feedback(student_id):
     cursor.close()
     return jsonify(json_data), 200
 
+# Add student feedback
 @student_bp.route('/students/<int:student_id>/courses/<int:course_id>/feedback', methods=['POST'])
 def submit_feedback(student_id, course_id):
     data = request.json
@@ -85,6 +93,7 @@ def submit_feedback(student_id, course_id):
     cursor.close()
     return jsonify({"message": "Feedback submitted"}), 201
 
+# List a student's degree audit
 @student_bp.route('/students/<int:student_id>/degreeaudit', methods=['GET'])
 def get_degree_audit_by_student(student_id):
     cursor = db.get_db().cursor()
