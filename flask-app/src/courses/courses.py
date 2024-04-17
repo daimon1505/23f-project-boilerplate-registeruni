@@ -118,15 +118,14 @@ def update_course(course_id):
 
 
 
-
 #remove a specific course
 @Course.route('/courses/<int:course_id>', methods=['DELETE'])
 def remove_course(course_id):
-    query = 'DELETE FROM Course WHERE CourseID = ' + str(course_id)
-    current_app.logger.info(query)
+    query = 'DELETE FROM Course WHERE CourseID = %s'
+    current_app.logger.info("Attempting to delete course with CourseID: %s", course_id)
 
     cursor = db.get_db().cursor()
-    cursor.execute(query, (course_id,))
+    cursor.execute(query, (course_id,)) 
     db.get_db().commit()
     
     return jsonify({"message": "Course deleted successfully"})
@@ -168,21 +167,36 @@ def get_academic_policies_for_course(course_id):
 @Course.route('/academic_policies', methods=['POST'])
 def add_academic_policy():
     policy_data = request.json
+    policy_id = policy_data['PolicyID']
     course_id = policy_data['CourseID']
     title = policy_data['Title']
     description = policy_data['Description']
     effective_date = policy_data['EffectiveDate']
     
     query = '''
-    INSERT INTO Academic_Policies (CourseID, Title, Description, EffectiveDate)
-    VALUES (%s, %s, %s, %s)
+    INSERT INTO Academic_Policies (PolicyID, CourseID, Title, Description, EffectiveDate)
+    VALUES (%s, %s, %s, %s, %s)
     '''
     cursor = db.get_db().cursor()
-    cursor.execute(query, (course_id, title, description, effective_date))
+    cursor.execute(query, (policy_id, course_id, title, description, effective_date))
     db.get_db().commit()
     
     return jsonify({"message": "Academic policy added successfully"})
 
+# Delete an academic policy
+@Course.route('/academic_policies/<int:policy_id>', methods=['DELETE'])
+def delete_academic_policy(policy_id):
+    query = 'DELETE FROM Academic_Policies WHERE PolicyID = %s'
+    cursor = db.get_db().cursor()
+    cursor.execute(query, (policy_id,))
+    db.get_db().commit()
+    
+    if cursor.rowcount == 0:
+        return jsonify({"error": "No policy found with the given ID"}), 404
+
+    return jsonify({"message": "Academic policy deleted successfully"})
+
+    
 @Course.route('/academic_policies/<int:policy_id>', methods=['PUT'])
 def update_academic_policy(policy_id):
     the_data = request.json
@@ -273,3 +287,53 @@ def update_enrollment_status(course_id):
     db.get_db().commit()
 
     return 'success'
+
+
+# Get top 10 courses by total enrollment
+@Course.route('/courses/top-enrollment', methods=['GET'])
+def get_top_courses_by_enrollment():
+    query = '''
+    SELECT Course.CourseID, Course.Name, Enrollment_Status.Total_Enrollment
+    FROM Course
+    JOIN Enrollment_Status ON Course.CourseID = Enrollment_Status.CourseID
+    ORDER BY Enrollment_Status.Total_Enrollment DESC
+    LIMIT 10;
+    '''
+    current_app.logger.info("Fetching top 10 courses by total enrollment")
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    row_headers = [x[0] for x in cursor.description]  # Extract the row headers
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+
+    return jsonify(json_data)
+
+
+
+
+# Get courses with the highest enrollment broken down by student majors
+@Course.route('/courses/enrollment-by-major', methods=['GET'])
+def get_enrollment_by_major():
+    query = '''
+    SELECT Students.major, Course.CourseID, Course.Name, COUNT(Students.studentID) AS EnrolledStudents
+    FROM Students
+    JOIN StudentsCourse ON Students.studentID = StudentsCourse.studentID
+    JOIN Course ON StudentsCourse.courseID = Course.CourseID
+    GROUP BY Students.major, Course.CourseID, Course.Name
+    ORDER BY EnrolledStudents DESC;
+    '''
+    current_app.logger.info("Fetching courses with highest enrollment by major")
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    row_headers = [x[0] for x in cursor.description]  # Extract the row headers
+    json_data = []
+    results = cursor.fetchall()
+    for row in results:
+        json_data.append(dict(zip(row_headers, row)))
+
+    return jsonify(json_data)
+
