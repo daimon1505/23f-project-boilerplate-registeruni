@@ -84,3 +84,14 @@ def submit_feedback(student_id, course_id):
     db.get_db().commit()
     cursor.close()
     return jsonify({"message": "Feedback submitted"}), 201
+
+@student_bp.route('/students/<int:student_id>/degreeaudit', methods=['GET'])
+def get_degree_audit_by_student(student_id):
+    cursor = db.get_db().cursor()
+    cursor.execute('SELECT * FROM DegreeAudit WHERE studentID = %s', (student_id,))
+    degree_audit = cursor.fetchone()  
+    cursor.close()
+    if degree_audit:
+        return jsonify(degree_audit), 200
+    else:
+        return jsonify({"message": "Degree audit not found for the given student ID"}), 404
