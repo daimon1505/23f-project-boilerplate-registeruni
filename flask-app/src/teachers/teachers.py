@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request, jsonify, make_response, current_app
 import json
 from src import db
 
@@ -9,7 +9,7 @@ Teacher = Blueprint('Teacher', __name__)
 @Teacher.route('/Teacher', methods=['GET'])
 def get_teachers():
     cursor = db.get_db().cursor()
-    cursor.execute('SELECT FirstName, LastName, Email FROM Teacher')
+    cursor.execute('SELECT FirstName, LastName, Email, TeacherId, DepartmentKey FROM Teacher')
     row_headers = [x[0] for x in cursor.description]  
     json_data = []
     theData = cursor.fetchall()
@@ -25,10 +25,10 @@ def add_teacher():
     the_data = request.json
     current_app.logger.info(the_data)
 
-    first_name = the_data['first_name']
-    last_name = the_data['last_name']
-    email = the_data['email']
-    department_key = the_data['department_key']
+    first_name = the_data['FirstName']
+    last_name = the_data['LastName']
+    email = the_data['Email']
+    department_key = the_data['DepartmentKey']
 
     query = 'INSERT INTO Teacher (FirstName, LastName, Email, DepartmentKey) VALUES ("'
     query += first_name + '", "'
@@ -102,10 +102,10 @@ def update_teacher(teacher_id):
     the_data = request.json
     current_app.logger.info(the_data)
 
-    first_name = the_data['first_name']
-    last_name = the_data['last_name']
-    email = the_data['email']
-    department_key = the_data['department_key']
+    first_name = the_data['FirstName']
+    last_name = the_data['LastName']
+    email = the_data['Email']
+    department_key = the_data['DepartmentKey']
 
     query = "UPDATE Teacher SET "
     query += "FirstName = '" + first_name + "', "
