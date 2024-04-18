@@ -3,10 +3,26 @@ from src import db
 
 student = Blueprint('student', __name__)
 
+@student.route('/students/<int:student_id>', methods=['GET'])
+def get_student_info(student_id):
+    cursor = db.get_db().cursor()
+    cursor.execute('SELECT * FROM Students WHERE studentID = %s', (student_id,))
+    row_headers = [x[0] for x in cursor.description]  
+    json_data = []
+    student_info = cursor.fetchone()  
+
+    if student_info is not None:
+        json_data.append(dict(zip(row_headers, student_info)))
+        cursor.close()
+        return jsonify(json_data), 200
+    else:
+        cursor.close()
+        return jsonify({'message': 'Student not found'}), 404
+
 @student.route('/students/<int:student_id>/plans', methods=['GET'])
 def get_student_plans(student_id):
     cursor = db.get_db().cursor()
-    cursor.execute('SELECT * FROM Plan WHERE studentID = %s', (student_id,))
+    cursor.execute('SELECT planName, studentID, planID FROM Plan WHERE studentID = %s', (student_id,))
     row_headers = [x[0] for x in cursor.description]  
     json_data = []
     plans = cursor.fetchall()
@@ -19,7 +35,7 @@ def get_student_plans(student_id):
 def create_student_plan(student_id):
     data = request.json
     cursor = db.get_db().cursor()
-    cursor.execute('INSERT INTO Plan (studentID, planName, planId) VALUES (%s, %s, %s)', (student_id, data['planName'], data['planId']))
+    cursor.execute('INSERT INTO Plan (studentID, planName) VALUES (%s, %s )', (student_id, data['planName']))
     db.get_db().commit()
     cursor.close()
     return jsonify({"message": "Plan created"}), 201
@@ -28,7 +44,7 @@ def create_student_plan(student_id):
 def get_student_courses(student_id):
     cursor = db.get_db().cursor()
     cursor.execute('''
-    SELECT DISTINCT
+    SELECT
         co.CourseID,
         co.Name,
         co.Description,
@@ -60,12 +76,71 @@ def get_student_courses(student_id):
     courses = cursor.fetchall()
     cursor.close()
 
-    if not courses:
-        return jsonify({"message": "No courses found for the student."}), 404
-
     row_headers = [x[0] for x in cursor.description]
     json_data = [dict(zip(row_headers, course)) for course in courses]
     return jsonify(json_data), 200
+
+@student.route('/students/<int:student_id>/completed_courses', methods=['GET'])
+def get_completed_courses(student_id):
+    cursor = db.get_db().cursor()
+    cursor.execute('''
+        SELECT 
+            co.CourseID,
+            co.Name,
+            co.Description,
+            co.Credit_Hours
+        FROM 
+            StudentsCourse sc
+        INNER JOIN 
+            Course co 
+        ON 
+            sc.CourseID = co.CourseID
+        WHERE 
+            sc.studentID = %s
+        ORDER BY 
+            co.CourseID
+    ''', (student_id,))
+    courses = cursor.fetchall()
+    cursor.close()
+
+    if not courses:
+        return jsonify({"message": "No completed courses found for the student."}), 404
+
+    row_headers = [x[0] for x in cursor.description]  
+    json_data = [dict(zip(row_headers, course)) for course in courses]
+    return jsonify(json_data), 200
+
+@student.route('/students/<int:student_id>/courses/<int:course_id>', methods=['POST'])
+def add_course_to_student_plan(student_id, course_id):
+    cursor = db.get_db().cursor()
+
+    try:
+        cursor.execute(
+            'INSERT INTO StudentsCourse (studentID, courseID) VALUES (%s, %s)',
+            (student_id, course_id)
+        )
+        db.get_db().commit()
+    except Exception as e:
+        db.get_db().rollback()
+        return jsonify({"message": "Course already taken"}), 400
+    finally:
+        cursor.close()
+
+    return jsonify({"message": "Course added to student's plan successfully"}), 201
+
+
+@student.route('/students/<int:student_id>/courses/<int:course_id>', methods=['DELETE'])
+def delete_course_from_student(student_id, course_id):
+    cursor = db.get_db().cursor()
+    cursor.execute(
+        'DELETE FROM StudentsCourse WHERE studentID = %s AND courseID = %s',
+        (student_id, course_id)
+    )
+    db.get_db().commit()
+    cursor.close()
+
+    return jsonify({"message": "Course removed from student's plan successfully"}), 200
+
 
 
 @student.route('/courses', methods=['GET'])
@@ -84,7 +159,7 @@ def get_all_courses():
         INNER JOIN Teacher ON Course.Teacher_ID = Teacher.TeacherId
         INNER JOIN Department ON Course.DepartmentKey = Department.DepartmentKey;
     ''')
-    row_headers = [x[0] for x in cursor.description]  # This will extract row headers
+    row_headers = [x[0] for x in cursor.description] 
     json_data = []
     courses = cursor.fetchall()
     for course in courses:
@@ -113,7 +188,7 @@ def delete_student_plan(student_id, plan_id):
 def get_student_academic_record(student_id):
     cursor = db.get_db().cursor()
     cursor.execute('SELECT * FROM StudentAcademicRecord WHERE studentID = %s', (student_id,))
-    row_headers = [x[0] for x in cursor.description]  # Extract the row headers
+    row_headers = [x[0] for x in cursor.description]  
     json_data = []
     record = cursor.fetchall()
     for rec in record:
@@ -135,7 +210,7 @@ def update_student_academic_record(student_id):
 def get_student_feedback(student_id):
     cursor = db.get_db().cursor()
     cursor.execute('SELECT * FROM Feedback WHERE studentID = %s', (student_id,))
-    row_headers = [x[0] for x in cursor.description] 
+    row_headers = [x[0] for x in cursor.description]  
     json_data = []
     feedbacks = cursor.fetchall()
     for feedback in feedbacks:
@@ -184,25 +259,6 @@ def add_student():
     cursor.close()
     return jsonify({"message": "Student added successfully"}), 201
 
-@student.route('/courses/<int:course_id>/feedback', methods=['GET'])
-def get_feedback_by_course(course_id):
-    cursor = db.get_db().cursor()
-    cursor.execute("""
-        SELECT f.feedbackID, f.comments, f.rating, f.studentID, c.Name as courseName
-        FROM Feedback f
-        JOIN Course c ON f.courseID = c.CourseID
-        WHERE f.courseID = %s
-    """, (course_id,))
-    feedbacks = cursor.fetchall()  
-    cursor.close()
-    if feedbacks:
-        feedback_list = [{'feedbackID': fb[0], 'comments': fb[1], 'rating': fb[2], 'studentID': fb[3], 'courseName': fb[4]} for fb in feedbacks]
-        return jsonify(feedback_list), 200
-    else:
-        return jsonify({"message": "Feedback not found for the given course ID"}), 404
-
-
-
 @student.route('/students/<int:student_id>', methods=['PUT'])
 def update_student_details(student_id):
     data = request.json
@@ -223,6 +279,24 @@ def remove_student(student_id):
     if rows_deleted == 0:
         return jsonify({"message": "No student found with the provided ID"}), 404
     return jsonify({"message": "Student removed successfully"}), 200
+@student.route('/courses/<int:course_id>/feedback', methods=['GET'])
+
+def get_feedback_by_course(course_id):
+    cursor = db.get_db().cursor()
+    cursor.execute("""
+        SELECT f.feedbackID, f.comments, f.rating, f.studentID, c.Name as courseName
+        FROM Feedback f
+        JOIN Course c ON f.courseID = c.CourseID
+        WHERE f.courseID = %s
+    """, (course_id,))
+    feedbacks = cursor.fetchall()  
+    cursor.close()
+    if feedbacks:
+        feedback_list = [{'feedbackID': fb[0], 'comments': fb[1], 'rating': fb[2], 'studentID': fb[3], 'courseName': fb[4]} for fb in feedbacks]
+        return jsonify(feedback_list), 200
+    else:
+        return jsonify({"message": "Feedback not found for the given course ID"}), 404
+
 
 @student.route('/students/major/<string:major>', methods=['GET'])
 def get_students_by_major(major):
@@ -242,10 +316,8 @@ def get_course_average_rating(course_id):
     ''', (course_id,))
     result = cursor.fetchone()
     cursor.close()
-
-    if result and result[0] is not None:
-        average_rating = float(result[0])
+    if result['AverageRating'] is not None:
+        average_rating = float(result['AverageRating'])
         return jsonify({'Course ID': course_id, 'Average Rating': average_rating}), 200
     else:
         return jsonify({'Course ID': course_id, 'message': 'No ratings found for this course'}), 404
-
