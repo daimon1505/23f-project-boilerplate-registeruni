@@ -316,8 +316,11 @@ def get_course_average_rating(course_id):
     ''', (course_id,))
     result = cursor.fetchone()
     cursor.close()
-    if result['AverageRating'] is not None:
-        average_rating = float(result['AverageRating'])
+
+    if result and result[0] is not None:
+        average_rating = float(result[0])
         return jsonify({'Course ID': course_id, 'Average Rating': average_rating}), 200
     else:
         return jsonify({'Course ID': course_id, 'message': 'No ratings found for this course'}), 404
+
+
