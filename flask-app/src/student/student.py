@@ -135,7 +135,7 @@ def update_student_academic_record(student_id):
 def get_student_feedback(student_id):
     cursor = db.get_db().cursor()
     cursor.execute('SELECT * FROM Feedback WHERE studentID = %s', (student_id,))
-    row_headers = [x[0] for x in cursor.description]  # Extract the row headers
+    row_headers = [x[0] for x in cursor.description] 
     json_data = []
     feedbacks = cursor.fetchall()
     for feedback in feedbacks:
@@ -184,6 +184,25 @@ def add_student():
     cursor.close()
     return jsonify({"message": "Student added successfully"}), 201
 
+@student.route('/courses/<int:course_id>/feedback', methods=['GET'])
+def get_feedback_by_course(course_id):
+    cursor = db.get_db().cursor()
+    cursor.execute("""
+        SELECT f.feedbackID, f.comments, f.rating, f.studentID, c.Name as courseName
+        FROM Feedback f
+        JOIN Course c ON f.courseID = c.CourseID
+        WHERE f.courseID = %s
+    """, (course_id,))
+    feedbacks = cursor.fetchall()  
+    cursor.close()
+    if feedbacks:
+        feedback_list = [{'feedbackID': fb[0], 'comments': fb[1], 'rating': fb[2], 'studentID': fb[3], 'courseName': fb[4]} for fb in feedbacks]
+        return jsonify(feedback_list), 200
+    else:
+        return jsonify({"message": "Feedback not found for the given course ID"}), 404
+
+
+
 @student.route('/students/<int:student_id>', methods=['PUT'])
 def update_student_details(student_id):
     data = request.json
@@ -224,9 +243,9 @@ def get_course_average_rating(course_id):
     result = cursor.fetchone()
     cursor.close()
 
-    # Check if a result is found, i.e., there are ratings for the course
-    if result['AverageRating'] is not None:
-        average_rating = float(result['AverageRating'])
+    if result and result[0] is not None:
+        average_rating = float(result[0])
         return jsonify({'Course ID': course_id, 'Average Rating': average_rating}), 200
     else:
         return jsonify({'Course ID': course_id, 'message': 'No ratings found for this course'}), 404
+
