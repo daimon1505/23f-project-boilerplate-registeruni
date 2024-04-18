@@ -121,3 +121,16 @@ def update_teacher(teacher_id):
     db.get_db().commit()
 
     return 'Success'
+
+# Vieweing the feedback for a teacher
+@Teacher.route('/teachers/<int:teacher_id>/feedback', methods=['GET'])
+def get_teacher_feedback(teacher_id):
+    cursor = db.get_db().cursor()
+    cursor.execute('SELECT comments, rating, feedbackID FROM Feedback WHERE courseID = %s', (teacher_id,))
+    row_headers = [x[0] for x in cursor.description]  # Extract the row headers
+    json_data = []
+    feedbacks = cursor.fetchall()
+    for feedback in feedbacks:
+        json_data.append(dict(zip(row_headers, feedback)))
+    cursor.close()
+    return jsonify(json_data), 200
