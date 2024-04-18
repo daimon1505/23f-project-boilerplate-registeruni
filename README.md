@@ -1,4 +1,8 @@
-# MySQL + Flask Boilerplate Project
+## RegisterUni
+
+## Project Description
+RegisterUni is our very own course registration application, designed to make course registraton for anyone involved in the process much easier to understand and perform. 
+It allows for students to browse for course listings, teachers to view student feedback, and advisors to edit student degree audits.
 
 This repo contains a boilerplate setup for spinning up 3 Docker containers: 
 1. A MySQL 8 container for obvious reasons
@@ -13,7 +17,18 @@ This repo contains a boilerplate setup for spinning up 3 Docker containers:
 1. Create a file named `db_password.txt` in the `secrets/` folder and put inside of it the password you want to use for the a non-root user named webapp. 
 1. In a terminal or command prompt, navigate to the folder with the `docker-compose.yml` file.  
 1. Build the images with `docker compose build`
-1. Start the containers with `docker compose up`.  To run in detached mode, run `docker compose up -d`. 
+1. Start the containers with `docker compose up`.  To run in detached mode, run `docker compose up -d`.
+
+## List of members
+Kim-Chuong Tran Dang
+Sarthak Pokharel
+Maxwell Schnock
+Jacob Chamoun
+Karina Khaledi
+
+## License
+This project is licensed under the MIT License
+
 
 
 
