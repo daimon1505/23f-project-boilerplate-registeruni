@@ -279,12 +279,12 @@ def remove_student(student_id):
     if rows_deleted == 0:
         return jsonify({"message": "No student found with the provided ID"}), 404
     return jsonify({"message": "Student removed successfully"}), 200
-@student.route('/courses/<int:course_id>/feedback', methods=['GET'])
 
+@student.route('/courses/<int:course_id>/feedback/f', methods=['GET'])
 def get_feedback_by_course(course_id):
     cursor = db.get_db().cursor()
     cursor.execute("""
-        SELECT f.feedbackID, f.comments, f.rating, f.studentID, c.Name as courseName
+        SELECT f.feedbackID, f.comments, f.rating, f.studentID, f.courseID, c.Name as courseName
         FROM Feedback f
         JOIN Course c ON f.courseID = c.CourseID
         WHERE f.courseID = %s
@@ -292,10 +292,11 @@ def get_feedback_by_course(course_id):
     feedbacks = cursor.fetchall()  
     cursor.close()
     if feedbacks:
-        feedback_list = [{'feedbackID': fb[0], 'comments': fb[1], 'rating': fb[2], 'studentID': fb[3], 'courseName': fb[4]} for fb in feedbacks]
+        feedback_list = [{'feedbackID': fb[0], 'comments': fb[1], 'rating': fb[2], 'studentID': fb[3], 'courseID': fb[4], 'courseName': fb[5]} for fb in feedbacks]
         return jsonify(feedback_list), 200
     else:
         return jsonify({"message": "Feedback not found for the given course ID"}), 404
+
 
 
 @student.route('/students/major/<string:major>', methods=['GET'])
