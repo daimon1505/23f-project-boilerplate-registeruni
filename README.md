@@ -22,10 +22,10 @@ This repo contains a boilerplate setup for spinning up 3 Docker containers:
 1. Start the containers with `docker compose up`.  To run in detached mode, run `docker compose up -d`.
 
 ## List of members
-Kim-Chuong Tran Dang
-Sarthak Pokharel
-Maxwell Schnock
-Jacob Chamoun
+Kim-Chuong Tran Dang,
+Sarthak Pokharel,
+Maxwell Schnock,
+Jacob Chamoun,
 Karina Khaledi
 
 ## License
