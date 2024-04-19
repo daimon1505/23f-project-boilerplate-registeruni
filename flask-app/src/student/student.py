@@ -323,5 +323,3 @@ def get_course_average_rating(course_id):
         return jsonify({'Course ID': course_id, 'Average Rating': average_rating}), 200
     else:
         return jsonify({'Course ID': course_id, 'message': 'No ratings found for this course'}), 404
-
-
