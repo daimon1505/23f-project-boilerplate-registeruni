@@ -1,7 +1,7 @@
 ## RegisterUni
 
 ## Project Description
-RegisterUni is our course registration app is specifically designed to simplify and speed up the enrollment process for everyone involved—students, teachers, and advisors. This tool allows students to easily browse course listings, enables teachers to access student feedback, and assists advisors in editing degree audits. By addressing common issues such as enrollment limits, scheduling conflicts, and course setup, RegisterUni utilizes real-time data and advanced scheduling algorithms to ensure a smooth academic journey for students and efficient course management for faculty.
+RegisterUni is our course registration app is specifically designed to simplify and speed up the enrollment process for everyone involved—students, teachers, and advisors. This tool allows students to easily browse course listings, enables teachers to access student feedback for any courses, and assists advisors in editing degree audits for all of their students. By addressing common issues such as enrollment limits, scheduling conflicts, and course setup, RegisterUni utilizes real-time data and advanced scheduling algorithms to ensure a smooth academic journey for students and efficient course management for faculty.
 
 
 
