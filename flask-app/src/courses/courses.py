@@ -27,7 +27,6 @@ def add_new_course():
     the_data = request.json
     current_app.logger.info(the_data)
 
-    courseId = the_data['CourseID']
     name = the_data['Name']
     credit_hours = the_data['Credit_Hours']
     description = the_data.get('Description', '')  
@@ -35,8 +34,8 @@ def add_new_course():
     teacher_id = the_data['Teacher_ID']
     department_key = the_data['DepartmentKey']
 
-    query = 'INSERT INTO Course (CourseID, Name, Credit_Hours, Description, Pre_req, Teacher_ID, DepartmentKey) VALUES ('
-    query += f'{courseId}, "{name}", {credit_hours}, "{description}", {pre_req if pre_req is not None else "NULL"}, {teacher_id}, {department_key})'
+    query = 'INSERT INTO Course (Name, Credit_Hours, Description, Pre_req, Teacher_ID, DepartmentKey) VALUES ('
+    query += f'"{name}", {credit_hours}, "{description}", {pre_req if pre_req is not None else "NULL"}, {teacher_id}, {department_key})'
     current_app.logger.info(query)
 
     cursor = db.get_db().cursor()
@@ -167,18 +166,17 @@ def get_academic_policies_for_course(course_id):
 @Course.route('/academic_policies', methods=['POST'])
 def add_academic_policy():
     policy_data = request.json
-    policy_id = policy_data['PolicyID']
     course_id = policy_data['CourseID']
     title = policy_data['Title']
     description = policy_data['Description']
     effective_date = policy_data['EffectiveDate']
     
     query = '''
-    INSERT INTO Academic_Policies (PolicyID, CourseID, Title, Description, EffectiveDate)
-    VALUES (%s, %s, %s, %s, %s)
+    INSERT INTO Academic_Policies (CourseID, Title, Description, EffectiveDate)
+    VALUES (%s, %s, %s, %s)
     '''
     cursor = db.get_db().cursor()
-    cursor.execute(query, (policy_id, course_id, title, description, effective_date))
+    cursor.execute(query, (course_id, title, description, effective_date))
     db.get_db().commit()
     
     return jsonify({"message": "Academic policy added successfully"})
@@ -336,4 +334,3 @@ def get_enrollment_by_major():
         json_data.append(dict(zip(row_headers, row)))
 
     return jsonify(json_data)
-
