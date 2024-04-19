@@ -4,8 +4,6 @@
 RegisterUni is our course registration app is specifically designed to simplify and speed up the enrollment process for everyone involved—students, teachers, and advisors. This tool allows students to easily browse course listings, enables teachers to access student feedback for any courses, and assists advisors in editing degree audits for all of their students. By addressing common issues such as enrollment limits, scheduling conflicts, and course setup, RegisterUni utilizes real-time data and advanced scheduling algorithms to ensure a smooth academic journey for students and efficient course management for faculty.
 
 
-
-
 This repo contains a boilerplate setup for spinning up 3 Docker containers: 
 1. A MySQL 8 container for obvious reasons
 1. A Python Flask container to implement a REST API
@@ -27,6 +25,10 @@ Sarthak Pokharel,
 Maxwell Schnock,
 Jacob Chamoun,
 Karina Khaledi
+
+## Meeting Recording
+[Watch the recorded meeting here!] (https://youtu.be/osVJMIvhUOI?si=enmHJ9aS8APqcYRa)
+
 
 ## License
 This project is licensed under the MIT License
